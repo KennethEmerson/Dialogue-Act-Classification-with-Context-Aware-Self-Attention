@@ -29,7 +29,7 @@ The dataset used to train and evaluate the model is stored in the [data/train/Tr
 
 
 To speed up the code and in order to extract the data uttterance intent labels, a separate preprocessing script [load_data.py](data/load_data.py) is provided which extracts the relevant features and labels from the dataset and splits the training set into a training and validation set. Furthermore, each dialogue in all three sets is appended with a "EOU EOU" utterance (labelled: EOU), in order to help the model recognize the end of a dialogue. 
-Finally, the preporcessing script saves this extracted data into [train.csv](data/train.csv), [validate.csv](data/validate.csv), [test.csv](data/test.csv) and [labels.csv](data/labels.csv). These files will then be used by the main scripts to train and test the data. 
+Finally, the preprocessing script saves this extracted data into [train.csv](data/train.csv), [validate.csv](data/validate.csv), [test.csv](data/test.csv) and [labels.csv](data/labels.csv). These files will then be used by the main scripts to train and test the data. 
 
 
 ## training of the model
