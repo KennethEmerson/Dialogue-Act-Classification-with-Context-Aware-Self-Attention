@@ -8,8 +8,8 @@ The [model architecture](model/context_aware_dac_model.py) is based on the work 
 
 
 ## prerequisites and installation
-* The code is written in Python 3.9.6 and a [requirements.txt](requirements.txt) file, containing all required packages, is included in the repository. The implementation uses the [MLFlow](https://mlflow.org/) library to store the metrics an the trainend models.
-* Due to its size, the original Glove pretrained word vector file is not be included in the repository. You can download the zipfile containing the word vector file from the [Stanford website](https://nlp.stanford.edu/data/glove.6B.zip). You should copy the *glove.6B.50d.txt* file into the folder *model/glove/* before using the codebase.
+* The code is written in Python 3.9.6 and a [requirements.txt](requirements.txt) file, containing all required packages, is included in the repository. The implementation uses the [MLFlow](https://mlflow.org/) library to store the metrics and the trained models.
+* Due to its size, the original Glove pretrained word vector file is not included in the repository. You can download the zipfile containing the word vector file from the [Stanford website](https://nlp.stanford.edu/data/glove.6B.zip). You should copy the *glove.6B.50d.txt* file into the folder *model/glove/* before using the codebase.
 
 
 ## data preprocessing
