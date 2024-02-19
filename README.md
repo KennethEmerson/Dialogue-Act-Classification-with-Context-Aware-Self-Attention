@@ -8,8 +8,8 @@ The [model architecture](model/context_aware_dac_model.py) is based on the work 
 
 
 ## prerequisites and installation
-* The code is written in Python 3.9.6 and a [requirements.txt](requirements.txt) file, containing all required packages, is included in the repository. The implementation uses the [MLFlow](https://mlflow.org/) library to store the metrics an the trainend models.
-* Due to its size, the original Glove pretrained word vector file is not be included in the repository. You can download the zipfile containing the word vector file from the [Stanford website](https://nlp.stanford.edu/data/glove.6B.zip). You should copy the *glove.6B.50d.txt* file into the folder *model/glove/* before using the codebase.
+* The code is written in Python 3.9.6 and a [requirements.txt](requirements.txt) file, containing all required packages, is included in the repository. The implementation uses the [MLFlow](https://mlflow.org/) library to store the metrics and the trained models.
+* Due to its size, the original Glove pretrained word vector file is not included in the repository. You can download the zipfile containing the word vector file from the [Stanford website](https://nlp.stanford.edu/data/glove.6B.zip). You should copy the *glove.6B.50d.txt* file into the folder *model/glove/* before using the codebase.
 
 
 ## data preprocessing
@@ -29,7 +29,7 @@ The dataset used to train and evaluate the model is stored in the [data/train/Tr
 
 
 To speed up the code and in order to extract the data uttterance intent labels, a separate preprocessing script [load_data.py](data/load_data.py) is provided which extracts the relevant features and labels from the dataset and splits the training set into a training and validation set. Furthermore, each dialogue in all three sets is appended with a "EOU EOU" utterance (labelled: EOU), in order to help the model recognize the end of a dialogue. 
-Finally, the preporcessing script saves this extracted data into [train.csv](data/train.csv), [validate.csv](data/validate.csv), [test.csv](data/test.csv) and [labels.csv](data/labels.csv). These files will then be used by the main scripts to train and test the data. 
+Finally, the preprocessing script saves this extracted data into [train.csv](data/train.csv), [validate.csv](data/validate.csv), [test.csv](data/test.csv) and [labels.csv](data/labels.csv). These files will then be used by the main scripts to train and test the data. 
 
 
 ## training of the model
