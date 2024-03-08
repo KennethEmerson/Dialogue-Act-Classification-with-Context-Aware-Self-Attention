@@ -31,7 +31,7 @@ MAX_UTTERANCE_LENGTH = 87
 MODEL_HIDDEN_SIZE = 768
 DATASET_NBR_OF_INTENTS = 40
 LEARNING_RATE = 0.015
-DATALOADER_WORKERS = 3
+DATALOADER_WORKERS = 2
 GRADIENT_CLIPPING = 5.0
 
 # Set MLFLOW
@@ -169,7 +169,8 @@ def train_model(
         mlflow.log_param("dataset nbr of intents",DATASET_NBR_OF_INTENTS)
         mlflow.log_param("optimizer_learning_rate",LEARNING_RATE)
         mlflow.log_param("batchsize",batchsize)
-        mlflow.log_param("seed",seed)
+        if not run_id:
+            mlflow.log_param("seed",seed)
         mlflow.log_param("gradient clipping treshold",GRADIENT_CLIPPING)
         mlflow.log_param("ratio of training dataset used for validation",len(validation_data)/(len(validation_data)+len(train_data)))
         mlflow.log_param("number of records in training set",len(train_data)) 
@@ -214,7 +215,7 @@ if __name__=="__main__":
     EPOCHS = 20
     BATCHSIZE = 1400
     SAVE_MODEL = True
-    EARLY_STOPPING = 5
+    EARLY_STOPPING = 9
     
 
     # Load data

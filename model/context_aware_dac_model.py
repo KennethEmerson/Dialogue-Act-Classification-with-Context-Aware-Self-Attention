@@ -11,6 +11,12 @@ import torch.nn as nn
 
 from .glove_and_char_embedder import Glove_and_Char_Embedder
 
+
+GRU_UTTERANCE_LAYER_SIZE = 100 #100 #128
+GRU_SENTENCE_LAYER_SIZE = 60 #50 #128
+GLOVE_FILE = "glove.6B.300d.txt"
+GLOVE_TOKEN_SIZE = 300
+
 class ContextAwareDAC(nn.Module):
 
     def __init__(self,labels:Dict[str,int],hidden_size=768,max_tokens_per_utternace=87,device=torch.device("cpu")):
@@ -38,7 +44,7 @@ class ContextAwareDAC(nn.Module):
         self.optimizer = None
 
         # load the embedder object used for word-to-vec and char-to-vec
-        self.embedder = Glove_and_Char_Embedder(os.path.join("model","glove","glove.6B.50d.txt"),os.path.join("model","char_embedding.json"))
+        self.embedder = Glove_and_Char_Embedder(os.path.join("model","glove",GLOVE_FILE),os.path.join("model","char_embedding.json"))
         
         # CNN used to reduce dimensionality of Char-to-vec in utterance level part of paper
         self.utt_cnn1 = nn.Conv2d(in_channels=max_tokens_per_utternace, out_channels=max_tokens_per_utternace,kernel_size=(5, 5))
@@ -48,38 +54,41 @@ class ContextAwareDAC(nn.Module):
         self.utt_cnn5 = nn.ReLU()
         self.utt_cnn6 = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2))
 
+        self.utt_embeddings_dropout = nn.Dropout(0.3)
+
         # GRU layer used as last step in utterance level part as described in paper
         self.utt_rnn = nn.GRU(
-            input_size=58, 
-            hidden_size=128, 
-            num_layers=1, 
-            bidirectional=True,
-            batch_first=True
+            input_size = GLOVE_TOKEN_SIZE + 8, 
+            hidden_size = GRU_UTTERANCE_LAYER_SIZE, 
+            num_layers = 1, 
+            bidirectional = True,
+            batch_first = True
         )
+        
 
         # multi layer perceptron layers used for equation 5 in context aware attention part of original paper
-        self.context_nn1 = nn.Linear(in_features=256, out_features=128, bias=False)
-        self.context_nn2 = nn.Linear(in_features=128, out_features=128, bias=True)
+        self.context_nn1 = nn.Linear(in_features=GRU_UTTERANCE_LAYER_SIZE*2, out_features=128, bias=False)
+        self.context_nn2 = nn.Linear(in_features=GRU_SENTENCE_LAYER_SIZE, out_features=128, bias=True)
         self.context_nn3= nn.Linear(in_features=128, out_features=128, bias=False)
         
         # 2D representation linear projection to a 1D embedding (denoted as hi) in context aware attention part, as described in paper
-        self.linear_projection = nn.Linear(in_features=256, out_features=1, bias=True)
+        self.linear_projection = nn.Linear(in_features=GRU_UTTERANCE_LAYER_SIZE*2, out_features=1, bias=True)
 
         # conversation-level context initial states (gi in paper) 
-        self.gx = torch.randn((2, 2, 128), device=self.device, requires_grad=True)
+        self.gx = torch.randn((2, 2, GRU_SENTENCE_LAYER_SIZE), device=self.device, requires_grad=True)
 
         # final GRU layer as used in Conversation-level RNN of original paper
         self.conversation_rnn = nn.GRU(
-            input_size=1,
-            hidden_size=128, 
-            num_layers=1, 
-            bidirectional=True,
-            batch_first=True
+            input_size = 1,
+            hidden_size = GRU_SENTENCE_LAYER_SIZE, 
+            num_layers = 1, 
+            bidirectional = True,
+            batch_first = True
         )
 
         # Conditional Random Fields(CRF) in original paper are replaced by standard deep learning classifier 
         self.classifier = nn.Sequential(*[
-            nn.Linear(in_features=256*2, out_features=256),
+            nn.Linear(in_features=GRU_SENTENCE_LAYER_SIZE*4, out_features=256),
             nn.LeakyReLU(),
             nn.Linear(in_features=256, out_features=128),
             nn.LeakyReLU(),
@@ -113,7 +122,7 @@ class ContextAwareDAC(nn.Module):
         elif isinstance(utterance,list) or isinstance(utterance,tuple):
             dim = 2
             tokens = []
-            token_embeddings =  torch.zeros([len(utterance),self.max_tokens_per_utternace,50]) # 50 is features per token used by glove
+            token_embeddings =  torch.zeros([len(utterance),self.max_tokens_per_utternace,GLOVE_TOKEN_SIZE]) # 50 is features per token used by glove
             token_char_embeddings = torch.zeros([len(utterance),self.max_tokens_per_utternace, 21, 50]) #W 21 is max char length, 50 is features per char embedding
             for i in range(len(utterance)):
                 tokens = self.embedder.tokenize_utterance(utterance[i])
@@ -137,9 +146,10 @@ class ContextAwareDAC(nn.Module):
         # concatenate word-to-vec embeddings with char-to-vec embeddings as described in paper: 
         # Named entity recognition with bidirectional lstm-cnns by (Chiu and Nichols, 2016)
         RNN_inputs = torch.cat([token_embeddings,cnn_results.flatten(2)],dim=dim)
-        
+        RRN_inputs_with_dropout = self.utt_embeddings_dropout(RNN_inputs)
+
         # get hidden states from utterance RNN
-        _,hidden_states = self.utt_rnn(RNN_inputs)
+        _,hidden_states = self.utt_rnn(RRN_inputs_with_dropout)
         bidirectional_hidden_states = hidden_states.transpose(1,0).flatten(1) # Formula 3 in paper (GRU already returns bidirectional Hidden units)
 
 
@@ -147,7 +157,7 @@ class ContextAwareDAC(nn.Module):
         # Context-aware Self-attention and Conversation-level RNN
         # --------------------------------------------------------------------------------------------
         
-        features = torch.empty((0,256*2), device=self.device,requires_grad=True)
+        features = torch.empty((0,GRU_SENTENCE_LAYER_SIZE*4), device=self.device,requires_grad=True)
         gx = self.gx # load conversation-level context 
         
         # loop over each utterance in the batch

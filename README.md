@@ -9,7 +9,7 @@ The [model architecture](model/context_aware_dac_model.py) is based on the work 
 
 ## Prerequisites and installation
 * The code is written in Python 3.9.6 and a [requirements.txt](requirements.txt) file, containing all required packages, is included in the repository. The implementation uses the [MLFlow](https://mlflow.org/) library to store the metrics and the trained models.
-* Due to its size, the original Glove pretrained word vector file is not included in the repository. You can download the zipfile containing the word vector file from the [Stanford website](https://nlp.stanford.edu/data/glove.6B.zip). You should copy the *glove.6B.50d.txt* file into the folder *model/glove/* before using the codebase.
+* Due to its size, the original Glove pretrained word vector file is not included in the repository. You can download the zipfile containing the word vector file from the [Stanford website](https://nlp.stanford.edu/data/glove.6B.zip). You should copy the *glove.6B.XXd.txt* file you want to use into the folder *model/glove/* and update the constants *GLOVE_FILE* and *GLOVE_TOKEN_SIZE* in the [model/context_aware_dac_model.py](model/context_aware_dac_model.py) file before using the codebase.
 
 
 ## Data preprocessing
@@ -53,18 +53,18 @@ To consult the experiment parameters and metrics, the MLFLow web UI can be launc
   This will start a local webserver at [localhost:5000](http://localhost:5000) which allows for the consultation of all MLFlow registered info.
 
 ## Results
-The implemented model in this repository was trained for 20 epochs on the training set resulting in the following metrics on the test set:
-* accuracy score of 83,9%
-* balanced accuracy score of 65,7%.
+The implemented model in this repository was trained for 37 epochs on the training set resulting in the following metrics on the test set:
+* accuracy score of 88.8%
+* balanced accuracy score of 74.5%.
 
 Further improvements are most likely possible by tuning the hyperparameters and model hidden layer sizes.
 
 
 <br/><br/>
-
+<!---
 <img src="./docs/confusion_matrix_epoch_19.png"  height="600" alt="confusion matrix not available">
-<img src="./docs/TP_distribution_19.png"  height="600"
-alt="distribution not available">
+<img src="./docs/TP_distribution_19.png"  height="600" alt="distribution not available"> -->
+<img src="./docs/result_overview.png"  height="600" alt="distribution not available">
 <br/><br/>
 
 
